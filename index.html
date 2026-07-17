@@ -159,6 +159,17 @@
 
         /* Video Container */
         video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+        /* Tablet Landscape Optimization (Blackview Tab 3 Kids ~ 1024x600) */
+        @media (max-height: 650px) {
+            .pup-badge { min-height: 110px; padding: 20px 10px; border-width: 6px; }
+            .pup-badge img { max-height: 80px; }
+            #main-title { font-size: 2.2rem !important; margin-bottom: 15px !important; }
+            .pup-grid { gap: 15px; padding: 10px; }
+            #badge-theme-container { margin-top: 10px !important; }
+            #logo-button { height: 75px !important; }
+            #screen-video button { padding: 10px 30px !important; font-size: 1.2rem !important; }
+        }
     </style>
 </head>
 <body>
@@ -189,6 +200,7 @@
         class PupPadController {
             constructor() {
                 this.audioPlayer = new Audio();
+                this.audioCtx = null; // Lazy load Web Audio Context to comply with browser policies
                 
                 this.pups = [
                     { id: 'chase', name: 'CHASE' },
@@ -198,6 +210,9 @@
                     { id: 'rocky', name: 'ROCKY' },
                     { id: 'zuma', name: 'ZUMA' }
                 ];
+                
+                this.comboSequence = ['chase', 'marshall', 'skye'];
+                this.currentComboIndex = 0;
                 
                 this.ui = {
                     pupContainer: document.getElementById('pup-container'),
@@ -218,16 +233,41 @@
                 this.renderPupGrid();
                 
                 // Hide overlay if clicked before audio finishes
-                this.ui.overlay.addEventListener('click', () => this.hideOverlay());
+                this.ui.overlay.addEventListener('click', () => {
+                    this.playSynthesizedClick();
+                    this.hideOverlay();
+                });
                 
                 // Hide overlay naturally when audio ends
                 this.audioPlayer.addEventListener('ended', () => this.hideOverlay());
 
-                // Video controls
-                this.ui.logoButton.addEventListener('click', () => this.playThemeSong());
+                // Video controls and Easter Egg (Long Press)
+                let logoPressTimer;
+                const startLogoPress = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    this.playSynthesizedClick();
+                    logoPressTimer = setTimeout(() => {
+                        logoPressTimer = null;
+                        this.playRyderEasterEgg();
+                    }, 2000); // 2 second hold
+                };
+                
+                const cancelLogoPress = () => {
+                    if (logoPressTimer) {
+                        clearTimeout(logoPressTimer);
+                        this.playThemeSong(); // It was a short tap
+                    }
+                };
+
+                this.ui.logoButton.addEventListener('mousedown', startLogoPress);
+                this.ui.logoButton.addEventListener('mouseup', cancelLogoPress);
+                this.ui.logoButton.addEventListener('mouseleave', () => { if (logoPressTimer) clearTimeout(logoPressTimer); });
+                this.ui.logoButton.addEventListener('touchstart', startLogoPress, {passive: false});
+                this.ui.logoButton.addEventListener('touchend', cancelLogoPress);
+
                 this.ui.videoPlayer.addEventListener('ended', () => this.stopVideo());
-                this.ui.btnPause.addEventListener('click', () => this.togglePauseVideo());
-                this.ui.btnStop.addEventListener('click', () => this.stopVideo());
+                this.ui.btnPause.addEventListener('click', () => { this.playSynthesizedClick(); this.togglePauseVideo(); });
+                this.ui.btnStop.addEventListener('click', () => { this.playSynthesizedClick(); this.stopVideo(); });
             }
 
             renderPupGrid() {
@@ -244,8 +284,22 @@
             }
 
             playPup(pup) {
+                this.playSynthesizedClick();
+
+                // Secret Combo Tracker
+                if (pup.id === this.comboSequence[this.currentComboIndex]) {
+                    this.currentComboIndex++;
+                    if (this.currentComboIndex === this.comboSequence.length) {
+                        this.currentComboIndex = 0; // reset
+                        return this.playEverestEasterEgg();
+                    }
+                } else {
+                    this.currentComboIndex = (pup.id === this.comboSequence[0]) ? 1 : 0;
+                }
+
                 // Audio feedback (.wav is the new standard)
                 this.audioPlayer.pause();
+                this.audioPlayer.onended = () => this.hideOverlay(); // Restore normal end behavior
                 this.audioPlayer.src = `audio/${pup.id}-audio.wav`;
                 this.audioPlayer.currentTime = 0;
                 this.audioPlayer.play().catch(e => console.log("Audio play prevented/missing file", e));
@@ -279,6 +333,65 @@
             hideOverlay() {
                 this.ui.overlay.classList.remove('active');
                 if (this.overlayTimeout) clearTimeout(this.overlayTimeout);
+                document.body.style.boxShadow = 'none';
+            }
+
+            playSynthesizedClick() {
+                try {
+                    if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+                    
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, this.audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1200, this.audioCtx.currentTime + 0.05);
+                    
+                    gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.05);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    
+                    osc.start();
+                    osc.stop(this.audioCtx.currentTime + 0.05);
+                } catch (e) { console.warn("Web Audio API error", e); }
+            }
+
+            playRyderEasterEgg() {
+                this.audioPlayer.pause();
+                this.audioPlayer.src = 'audio/ryder.mp3';
+                this.audioPlayer.currentTime = 0;
+                this.audioPlayer.play().catch(e => console.log(e));
+                
+                // Visual feedback: Screen pulses red
+                document.body.style.transition = 'box-shadow 0.2s ease';
+                document.body.style.boxShadow = 'inset 0 0 50px 20px rgba(218, 41, 28, 0.8)';
+                setTimeout(() => document.body.style.boxShadow = 'none', 800);
+            }
+
+            playEverestEasterEgg() {
+                this.audioPlayer.pause();
+                this.audioPlayer.onended = () => this.hideOverlay(); // restore default
+                this.audioPlayer.src = 'audio/everest.mp3';
+                this.audioPlayer.currentTime = 0;
+                this.audioPlayer.play().catch(e => console.log(e));
+                
+                // Show the active character pop-out using the badge as we don't have a full char image
+                this.ui.overlayImage.src = 'image assets/EverestBadge.png';
+                
+                this.ui.overlayImage.style.setProperty('--active-glow-color', '#00958d');
+                this.ui.overlayImage.style.animation = 'none';
+                void this.ui.overlayImage.offsetWidth; 
+                this.ui.overlayImage.style.animation = 'pulse-glow 1.5s infinite alternate';
+                
+                this.ui.overlay.classList.add('active');
+                
+                if (this.overlayTimeout) clearTimeout(this.overlayTimeout);
+                this.overlayTimeout = setTimeout(() => {
+                    if (this.audioPlayer.paused) this.hideOverlay();
+                }, 4000);
             }
 
             playThemeSong() {
