@@ -14,7 +14,10 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
         body { 
             background-color: #121212; 
-            background-image: radial-gradient(circle at center, #2a2a2a 0%, #121212 100%);
+            background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.7)), url('images/paw-patrolbg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white; 
             overflow: hidden; 
             font-family: 'Literata', Tahoma, sans-serif; 
@@ -32,7 +35,7 @@
         /* Screen Management */
         .screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; 
+            display: flex; 
             flex-direction: column; align-items: center; justify-content: center;
         }
 
@@ -50,7 +53,6 @@
             position: relative;
             background-color: var(--pup-bg, #333);
             background-image: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.2) 100%);
-            /* Creating the physical badge shape */
             border-radius: 30px 30px 60px 60px; 
             padding: 40px 10px;
             text-align: center;
@@ -60,14 +62,13 @@
             color: white;
             cursor: pointer;
             
-            /* 3D Toy Effect: Silver plastic rim and depth */
             border: 8px solid #e8e8e8;
             border-top-color: #ffffff;
             border-bottom-color: #b0b0b0;
             box-shadow: 
-                0 15px 20px rgba(0,0,0,0.5), /* Drop shadow */
-                inset 0 10px 10px rgba(255,255,255,0.5), /* Inner Top highlight */
-                inset 0 -10px 15px rgba(0,0,0,0.4); /* Inner Bottom shading */
+                0 15px 20px rgba(0,0,0,0.5),
+                inset 0 10px 10px rgba(255,255,255,0.5),
+                inset 0 -10px 15px rgba(0,0,0,0.4);
             
             transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.1s ease, filter 0.2s ease, border-color 0.1s ease;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
@@ -86,11 +87,6 @@
             z-index: 2;
         }
 
-        .pup-badge span {
-            z-index: 2;
-            pointer-events: none;
-        }
-
         .pup-badge::after {
             content: '';
             position: absolute;
@@ -104,7 +100,6 @@
         }
 
         /* Character Colors */
-        #badge-theme { --pup-bg: #E3000F; width: 80%; max-width: 350px; margin: 0 auto 30px auto; padding: 20px; font-size: 1.5rem; border-radius: 40px; }
         #badge-chase { --pup-bg: #0033A0; }
         #badge-marshall { --pup-bg: #DA291C; }
         #badge-skye { --pup-bg: #E8499B; }
@@ -112,7 +107,6 @@
         #badge-rocky { --pup-bg: #00A368; }
         #badge-zuma { --pup-bg: #FF671F; }
 
-        /* Haptic press effect */
         .pup-badge:active { 
             transform: translateY(8px) scale(0.95); 
             box-shadow: 
@@ -123,72 +117,64 @@
             border-bottom-color: #ffffff;
         }
 
-        /* Mission Selection State */
-        .pup-badge.dimmed { filter: brightness(0.4) grayscale(0.6); border-color: #666; }
-        .pup-badge.selected { 
-            filter: brightness(1.2) grayscale(0); 
-            border-color: #00FFCC; 
-            box-shadow: 
-                0 0 30px rgba(0, 255, 204, 0.6), 
-                inset 0 10px 10px rgba(255,255,255,0.5),
-                inset 0 -10px 15px rgba(0,0,0,0.4);
-            animation: pulse-glow 2s infinite;
+        /* --- Active Pup Overlay (Drum Pad State) --- */
+        #pup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(8px);
         }
 
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 20px rgba(0, 255, 204, 0.4), inset 0 10px 10px rgba(255,255,255,0.5), inset 0 -10px 15px rgba(0,0,0,0.4); }
-            50% { box-shadow: 0 0 40px rgba(0, 255, 204, 0.8), inset 0 10px 10px rgba(255,255,255,0.5), inset 0 -10px 15px rgba(0,0,0,0.4); }
-            100% { box-shadow: 0 0 20px rgba(0, 255, 204, 0.4), inset 0 10px 10px rgba(255,255,255,0.5), inset 0 -10px 15px rgba(0,0,0,0.4); }
+        #pup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        /* Action Buttons */
-        .action-button {
-            font-family: 'Barlow', Tahoma, sans-serif;
-            font-size: 2.5rem;
-            font-weight: 900;
-            padding: 25px 50px;
-            border: 6px solid #fff;
-            border-radius: 60px;
-            color: white;
-            margin-top: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            display: none; 
-            text-transform: uppercase;
+        #overlay-image {
+            max-width: 80%;
+            max-height: 70vh;
+            object-fit: contain;
+            transform: scale(0.5);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));
+        }
+
+        #pup-overlay.active #overlay-image {
+            transform: scale(1);
         }
         
-        #btn-deploy { background-color: #005587; }
-        #btn-complete { background-color: #FFC72C; color: #111; border-color: #111; }
+        /* Dynamic pulse generated in JS based on pup theme color */
+        @keyframes pulse-glow {
+            0% { filter: drop-shadow(0 0 20px var(--active-glow-color, rgba(255, 255, 255, 0.6))); }
+            100% { filter: drop-shadow(0 0 80px var(--active-glow-color, rgba(255, 255, 255, 1))); }
+        }
 
-        /* Video Container */
-        video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="screen-main" class="screen">
         <h1 id="main-title" style="margin-bottom: 30px; font-size: 3.5rem; color: #fff;">Pup Pad Active</h1>
-        <div id="badge-theme" class="pup-badge"><img src="images/theme.png" alt="PAW PATROL THEME" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"><span style="display: none;">PAW PATROL THEME</span></div>
         <div class="pup-grid" id="pup-container">
-            </div>
-        <button id="btn-deploy" class="action-button">Deploy Pups!</button>
+            <!-- Badges generated by JS -->
+        </div>
     </div>
 
-    <div id="screen-video" class="screen" style="background-color: black; z-index: 100;">
-        <video id="master-video" playsinline></video>
-    </div>
-
-    <div id="screen-active-mission" class="screen">
-        <h1 style="color: #FFC72C; font-size: 4rem; margin-bottom: 50px;">Mission in Progress!</h1>
-        <div class="pup-grid" id="active-pup-container" style="display: flex; justify-content: center; gap: 40px;">
-            </div>
-        <button id="btn-complete" class="action-button" style="display: block; margin-top: 80px;">Mission Complete</button>
+    <div id="pup-overlay">
+        <img id="overlay-image" src="" alt="Active Pup">
     </div>
 
     <script>
         class PupPadController {
             constructor() {
-                this.currentState = 'IDLE';
-                this.selectedPups = new Set();
                 this.audioPlayer = new Audio();
                 
                 this.pups = [
@@ -199,29 +185,25 @@
                     { id: 'rocky', name: 'ROCKY' },
                     { id: 'zuma', name: 'ZUMA' }
                 ];
-
-                this.screens = {
-                    main: document.getElementById('screen-main'),
-                    video: document.getElementById('screen-video'),
-                    activeMission: document.getElementById('screen-active-mission')
-                };
                 
                 this.ui = {
-                    mainTitle: document.getElementById('main-title'),
                     pupContainer: document.getElementById('pup-container'),
-                    activePupContainer: document.getElementById('active-pup-container'),
-                    btnDeploy: document.getElementById('btn-deploy'),
-                    btnComplete: document.getElementById('btn-complete'),
-                    videoPlayer: document.getElementById('master-video')
+                    overlay: document.getElementById('pup-overlay'),
+                    overlayImage: document.getElementById('overlay-image')
                 };
 
+                this.overlayTimeout = null;
                 this.init();
             }
 
             init() {
                 this.renderPupGrid();
-                this.attachEventListeners();
-                this.transitionTo('IDLE');
+                
+                // Hide overlay if clicked before audio finishes
+                this.ui.overlay.addEventListener('click', () => this.hideOverlay());
+                
+                // Hide overlay naturally when audio ends
+                this.audioPlayer.addEventListener('ended', () => this.hideOverlay());
             }
 
             renderPupGrid() {
@@ -230,144 +212,53 @@
                     badge.className = 'pup-badge';
                     badge.id = `badge-${pup.id}`;
                     badge.innerHTML = `
-                        <img src="images/${pup.id}.png?v=2" alt="${pup.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <span style="display: none;">${pup.name}</span>
+                        <img src="images/${pup.id}.png?v=2" alt="${pup.name}" onerror="this.style.display='none';">
                     `;
-                    badge.addEventListener('click', () => this.handlePupClick(pup));
+                    badge.addEventListener('click', () => this.playPup(pup));
                     this.ui.pupContainer.appendChild(badge);
                 });
             }
 
-            attachEventListeners() {
-                this.ui.btnDeploy.addEventListener('click', () => this.transitionTo('DEPLOYING'));
-                this.ui.btnComplete.addEventListener('click', () => this.transitionTo('DEBRIEF'));
-                this.ui.videoPlayer.addEventListener('ended', () => this.handleVideoEnded());
-                document.getElementById('badge-theme').addEventListener('click', () => this.transitionTo('THEME_SONG'));
-            }
-
-            transitionTo(newState, payload = null) {
-                this.currentState = newState;
-                this.hideAllScreens();
-
-                switch(newState) {
-                    case 'IDLE':
-                        this.selectedPups.clear();
-                        this.updatePupVisuals(false);
-                        this.ui.mainTitle.innerText = "Pup Pad Active";
-                        this.ui.btnDeploy.style.display = 'none';
-                        document.getElementById('badge-theme').style.display = 'block';
-                        this.screens.main.style.display = 'flex';
-                        break;
-
-                    case 'DISPATCH':
-                        this.playVideo(`videos/${payload}.mp4`);
-                        break;
-
-                    case 'THEME_SONG':
-                        this.playVideo('videos/theme_song.mp4');
-                        break;
-
-                    case 'ASSEMBLY':
-                        this.ui.mainTitle.innerText = "Select Your Team!";
-                        this.updatePupVisuals(true); 
-                        document.getElementById('badge-theme').style.display = 'none';
-                        this.screens.main.style.display = 'flex';
-                        break;
-
-                    case 'DEPLOYING':
-                        this.playVideo('videos/deployment_sequence.mp4');
-                        break;
-
-                    case 'ACTIVE_MISSION':
-                        this.renderActiveMissionPups();
-                        this.screens.activeMission.style.display = 'flex';
-                        break;
-
-                    case 'DEBRIEF':
-                        this.playVideo('videos/mission_complete.mp4');
-                        break;
-                }
-            }
-
-            handlePupClick(pup) {
-                // Audio feedback
+            playPup(pup) {
+                // Audio feedback (.wav is the new standard)
                 this.audioPlayer.pause();
-                this.audioPlayer.src = `audio/${pup.id}.mp3`;
+                this.audioPlayer.src = `audio/${pup.id}-audio.wav`;
                 this.audioPlayer.currentTime = 0;
                 this.audioPlayer.play().catch(e => console.log("Audio play prevented/missing file", e));
 
-                if (this.currentState === 'ASSEMBLY') {
-                    if (this.selectedPups.has(pup.id)) {
-                        this.selectedPups.delete(pup.id);
-                    } else {
-                        this.selectedPups.add(pup.id);
-                    }
-                    this.updatePupVisuals(true);
-                    this.ui.btnDeploy.style.display = this.selectedPups.size > 0 ? 'block' : 'none';
+                // Show the active character pop-out
+                this.ui.overlayImage.src = `images/characters/${pup.id}.png`;
+                
+                // Set glow color based on character theme
+                const badgeElement = document.getElementById(`badge-${pup.id}`);
+                const themeColor = getComputedStyle(badgeElement).getPropertyValue('--pup-bg').trim();
+                
+                if (themeColor) {
+                    this.ui.overlayImage.style.setProperty('--active-glow-color', themeColor);
+                    this.ui.overlayImage.style.animation = 'none';
+                    // Trigger reflow to restart animation
+                    void this.ui.overlayImage.offsetWidth; 
+                    this.ui.overlayImage.style.animation = 'pulse-glow 1.5s infinite alternate';
                 }
-            }
 
-            updatePupVisuals(isAssemblyMode) {
-                this.pups.forEach(pup => {
-                    const badge = document.getElementById(`badge-${pup.id}`);
-                    badge.classList.remove('selected', 'dimmed');
-                    
-                    if (isAssemblyMode) {
-                        if (this.selectedPups.has(pup.id)) {
-                            badge.classList.add('selected');
-                        } else {
-                            badge.classList.add('dimmed');
-                        }
+                this.ui.overlay.classList.add('active');
+
+                // Failsafe timeout in case audio fails or is missing (fallback to 4s)
+                if (this.overlayTimeout) clearTimeout(this.overlayTimeout);
+                this.overlayTimeout = setTimeout(() => {
+                    if (this.audioPlayer.paused) {
+                        this.hideOverlay();
                     }
-                });
+                }, 4000);
             }
-
-            renderActiveMissionPups() {
-                this.ui.activePupContainer.innerHTML = ''; 
-                this.selectedPups.forEach(pupId => {
-                    const pupData = this.pups.find(p => p.id === pupId);
-                    const clone = document.createElement('div');
-                    clone.className = 'pup-badge selected';
-                    clone.id = `active-badge-${pupData.id}`;
-                    clone.innerHTML = `
-                        <img src="images/${pupData.id}.png?v=2" alt="${pupData.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <span style="display: none;">${pupData.name}</span>
-                    `;
-                    this.ui.activePupContainer.appendChild(clone);
-                });
-            }
-
-            playVideo(src) {
-                this.screens.video.style.display = 'flex';
-                this.ui.videoPlayer.src = src;
-                this.ui.videoPlayer.load();
-                this.ui.videoPlayer.play().catch(e => {
-                    console.log("Video playback error/missing file", e);
-                    // Fallback to progress state machine if video fails to load during testing
-                    setTimeout(() => this.handleVideoEnded(), 1000); 
-                });
-            }
-
-            handleVideoEnded() {
-                if (this.currentState === 'DISPATCH') this.transitionTo('ASSEMBLY');
-                else if (this.currentState === 'THEME_SONG') this.transitionTo('IDLE');
-                else if (this.currentState === 'DEPLOYING') this.transitionTo('ACTIVE_MISSION');
-                else if (this.currentState === 'DEBRIEF') this.transitionTo('IDLE');
-            }
-
-            hideAllScreens() {
-                Object.values(this.screens).forEach(screen => screen.style.display = 'none');
+            
+            hideOverlay() {
+                this.ui.overlay.classList.remove('active');
+                if (this.overlayTimeout) clearTimeout(this.overlayTimeout);
             }
         }
 
         const App = new PupPadController();
-
-        // Exposed global function for Tasker HTTP requests
-        window.triggerDispatch = function(callerId) {
-            if (App.currentState === 'IDLE') {
-                App.transitionTo('DISPATCH', callerId);
-            }
-        };
     </script>
 </body>
 </html>
