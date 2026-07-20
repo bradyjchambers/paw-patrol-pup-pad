@@ -10,7 +10,7 @@ Built purely with HTML, CSS, and Vanilla JavaScript, this app features rich anim
 - **Mission Dispatch Engine:** 
   - An incoming call alerts the user with randomized mission text featuring Adventure Bay's townsfolk.
   - Puts the pad into a "Select Your Crew" mode where users can select multiple pups to form a rescue team.
-  - Hitting "Call Pups!" locks in the team and plays the iconic dispatch audio.
+  - Hitting "Call Pups!" locks in the team, playing the iconic dispatch audio while presenting a dynamic overlay with animated GIFs of your chosen pup team, each glowing with their signature color.
 - **Remote API Triggering:** A lightweight Python server allows parents/users to trigger missions remotely via simple HTTP POST requests (perfect for Home Assistant or Stream Deck integrations).
 - **Hidden Easter Eggs:** 
   - **The Everest Code:** Tap pups in a specific secret sequence to unlock an Everest popup.
