@@ -180,6 +180,34 @@
             animation: pulse-glow 1.5s infinite alternate;
         }
 
+        /* Gif Box Overlay */
+        #gif-box-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 2500; opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        #gif-box-overlay.active {
+            opacity: 1; pointer-events: auto;
+        }
+
+        #gif-box-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        #btn-close-gifbox {
+            position: absolute; top: 20px; right: 20px;
+            padding: 10px 20px; font-size: 1.2rem; font-weight: 900; border-radius: 20px;
+            background: #DA291C; color: white; border: 3px solid #fff; font-family: 'Barlow', sans-serif;
+            cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            z-index: 2501;
+        }
+
         /* Video Container */
         video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
@@ -236,6 +264,11 @@
     </div>
 
     <div id="dispatch-overlay"></div>
+
+    <div id="gif-box-overlay">
+        <button id="btn-close-gifbox">Exit</button>
+        <img id="gif-box-img" src="" alt="Random Paw Patrol Gif">
+    </div>
 
     <div id="screen-video" class="screen" style="background-color: black; z-index: 2000; display: none;">
         <video id="master-video" playsinline></video>
@@ -341,7 +374,11 @@
                 this.comboSequence = ['chase', 'marshall', 'skye'];
                 this.currentComboIndex = 0;
                 
+                this.gifBoxTimer = null;
+                this.totalGifsDownloaded = 100; // Expected max amount
+                
                 this.ui = {
+                    mainTitle: document.getElementById('main-title'),
                     pupContainer: document.getElementById('pup-container'),
                     overlay: document.getElementById('pup-overlay'),
                     overlayImage: document.getElementById('overlay-image'),
@@ -351,7 +388,10 @@
                     videoPlayer: document.getElementById('master-video'),
                     btnPause: document.getElementById('btn-pause-video'),
                     btnStop: document.getElementById('btn-stop-video'),
-                    btnCallPups: document.getElementById('btn-call-pups')
+                    btnCallPups: document.getElementById('btn-call-pups'),
+                    gifBoxOverlay: document.getElementById('gif-box-overlay'),
+                    gifBoxImg: document.getElementById('gif-box-img'),
+                    btnCloseGifBox: document.getElementById('btn-close-gifbox')
                 };
 
                 this.overlayTimeout = null;
@@ -372,6 +412,27 @@
                 
                 // Hide overlay naturally when audio ends
                 this.audioPlayer.addEventListener('ended', () => this.hideOverlay());
+                
+                // Gif Box Mode Triggers
+                let titlePressTimer;
+                const startTitlePress = (e) => {
+                    if (e.cancelable) e.preventDefault();
+                    titlePressTimer = setTimeout(() => {
+                        titlePressTimer = null;
+                        this.startGifBoxMode();
+                    }, 2000); // 2 second hold
+                };
+                const cancelTitlePress = () => { if (titlePressTimer) clearTimeout(titlePressTimer); };
+                
+                this.ui.mainTitle.addEventListener('mousedown', startTitlePress);
+                this.ui.mainTitle.addEventListener('mouseup', cancelTitlePress);
+                this.ui.mainTitle.addEventListener('mouseleave', cancelTitlePress);
+                this.ui.mainTitle.addEventListener('touchstart', startTitlePress, {passive: false});
+                this.ui.mainTitle.addEventListener('touchend', cancelTitlePress);
+                
+                this.ui.btnCloseGifBox.addEventListener('click', () => this.stopGifBoxMode());
+                this.ui.gifBoxImg.addEventListener('click', () => this.nextGifBoxImage());
+                this.ui.gifBoxImg.onerror = () => this.nextGifBoxImage();
 
                 // Video controls and Easter Egg (Long Press)
                 let logoPressTimer;
@@ -624,6 +685,39 @@
                 document.querySelectorAll('.pup-badge').forEach(el => el.classList.remove('selected'));
                 this.ui.btnCallPups.style.display = 'none';
                 document.body.classList.remove('selection-mode');
+            }
+            
+            // --- Gif Box Mode ---
+            startGifBoxMode() {
+                if (this.appState !== 'idle') return;
+                this.appState = 'gif_box';
+                this.playSynthesizedClick();
+                this.ui.gifBoxOverlay.classList.add('active');
+                this.nextGifBoxImage();
+                
+                // Play a generic background theme if you have one, or just let it be silent
+                this.audioPlayer.pause();
+                this.audioPlayer.src = 'audio/incoming_call.wav'; // A nice transition sound
+                this.audioPlayer.play().catch(e => {});
+            }
+            
+            nextGifBoxImage() {
+                if (this.appState !== 'gif_box') return;
+                const randomId = Math.floor(Math.random() * this.totalGifsDownloaded);
+                this.ui.gifBoxImg.src = `images/gif_box/pb_gif_${randomId}.gif`;
+                
+                if (this.gifBoxTimer) clearTimeout(this.gifBoxTimer);
+                this.gifBoxTimer = setTimeout(() => {
+                    this.nextGifBoxImage();
+                }, 6000); // change gif every 6 seconds automatically
+            }
+            
+            stopGifBoxMode() {
+                this.appState = 'idle';
+                this.playSynthesizedClick();
+                if (this.gifBoxTimer) clearTimeout(this.gifBoxTimer);
+                this.ui.gifBoxOverlay.classList.remove('active');
+                this.ui.gifBoxImg.src = "";
             }
 
             playSynthesizedClick() {

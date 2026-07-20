@@ -13,6 +13,7 @@ Built purely with HTML, CSS, and Vanilla JavaScript, this app features rich anim
   - Hitting "Call Pups!" locks in the team, playing the iconic dispatch audio while presenting a dynamic overlay with animated GIFs of your chosen pup team, each glowing with their signature color.
 - **Remote API Triggering:** A lightweight Python server allows parents/users to trigger missions remotely via simple HTTP POST requests (perfect for Home Assistant or Stream Deck integrations).
 - **Hidden Easter Eggs:** 
+  - **Gif Box Mode:** Long-press the "RYDER'S PUP PAD" title (2 seconds) to enter a never-ending fullscreen gallery of random Paw Patrol GIFs! Tap the GIF to skip to the next one, or hit 'Exit' to return.
   - **The Everest Code:** Tap pups in a specific secret sequence to unlock an Everest popup.
   - **Ryder's Call:** Long-pressing the center PAW Patrol logo triggers Ryder.
   - **Theme Song:** A quick tap on the center logo plays the full video theme song with an interactive "Pause/Stop" UI.
