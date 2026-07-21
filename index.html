@@ -524,19 +524,20 @@
                 
                 // Gif Box Mode Triggers
                 let titlePressTimer;
-                const startTitlePress = (e) => {
-                    if (e.cancelable) e.preventDefault();
+                let isTitleLongPress = false;
+                const startTitlePress = () => {
+                    isTitleLongPress = false;
                     titlePressTimer = setTimeout(() => {
-                        titlePressTimer = null;
+                        isTitleLongPress = true;
                         this.startGifBoxMode();
                     }, 2000); // 2 second hold
                 };
                 const cancelTitlePress = () => { if (titlePressTimer) clearTimeout(titlePressTimer); };
                 
                 this.ui.mainTitle.addEventListener('mousedown', startTitlePress);
+                this.ui.mainTitle.addEventListener('touchstart', startTitlePress, {passive: true});
                 this.ui.mainTitle.addEventListener('mouseup', cancelTitlePress);
                 this.ui.mainTitle.addEventListener('mouseleave', cancelTitlePress);
-                this.ui.mainTitle.addEventListener('touchstart', startTitlePress, {passive: false});
                 this.ui.mainTitle.addEventListener('touchend', cancelTitlePress);
                 
                 this.ui.btnCloseGifBox.addEventListener('click', () => this.stopGifBoxMode());
@@ -545,27 +546,30 @@
 
                 // Video controls and Easter Egg (Long Press)
                 let logoPressTimer;
-                const startLogoPress = (e) => {
-                    if (e.cancelable) e.preventDefault();
-                    this.playSynthesizedClick();
+                let isLogoLongPress = false;
+                const startLogoPress = () => {
+                    isLogoLongPress = false;
                     logoPressTimer = setTimeout(() => {
-                        logoPressTimer = null;
+                        isLogoLongPress = true;
+                        this.playSynthesizedClick();
                         this.playRyderEasterEgg();
                     }, 2000); // 2 second hold
                 };
                 
                 const cancelLogoPress = () => {
-                    if (logoPressTimer) {
-                        clearTimeout(logoPressTimer);
-                        this.openSongPicker(); // It was a short tap
-                    }
+                    if (logoPressTimer) clearTimeout(logoPressTimer);
                 };
 
                 this.ui.logoButton.addEventListener('mousedown', startLogoPress);
+                this.ui.logoButton.addEventListener('touchstart', startLogoPress, {passive: true});
                 this.ui.logoButton.addEventListener('mouseup', cancelLogoPress);
-                this.ui.logoButton.addEventListener('mouseleave', () => { if (logoPressTimer) clearTimeout(logoPressTimer); });
-                this.ui.logoButton.addEventListener('touchstart', startLogoPress, {passive: false});
+                this.ui.logoButton.addEventListener('mouseleave', cancelLogoPress);
                 this.ui.logoButton.addEventListener('touchend', cancelLogoPress);
+
+                this.ui.logoButton.addEventListener('click', (e) => {
+                    if (isLogoLongPress) return;
+                    this.openSongPicker();
+                });
 
                 this.ui.videoPlayer.addEventListener('ended', () => this.stopVideo());
                 this.ui.btnPause.addEventListener('click', () => { this.playSynthesizedClick(); this.togglePauseVideo(); });
