@@ -16,7 +16,7 @@ Built purely with HTML, CSS, and Vanilla JavaScript, this app features rich anim
   - **Gif Box Mode:** Long-press the "RYDER'S PUP PAD" title (2 seconds) to enter a never-ending fullscreen gallery of random Paw Patrol GIFs! Tap the GIF to skip to the next one, or hit 'Exit' to return.
   - **The Everest Code:** Tap pups in a specific secret sequence to unlock an Everest popup.
   - **Ryder's Call:** Long-pressing the center PAW Patrol logo triggers Ryder.
-  - **Theme Song:** A quick tap on the center logo plays the full video theme song with an interactive "Pause/Stop" UI.
+  - **Song Picker:** A quick tap on the center logo opens a visual song selector, allowing users to choose from 10 different Paw Patrol music videos with an interactive "Pause/Stop" UI.
   - **Manual Mission Triggers:** Long-press Zuma (4 seconds) for a "Bad" mission, or Chase for a "Good" mission.
 
 ## Requirements
