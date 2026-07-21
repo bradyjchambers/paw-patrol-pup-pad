@@ -208,6 +208,61 @@
             z-index: 2501;
         }
 
+        /* Song Picker Overlay */
+        #song-picker-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1800; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease; backdrop-filter: blur(8px);
+            padding: 10px;
+        }
+        #song-picker-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .song-list-container {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            max-height: 65vh; overflow-y: auto; width: 95%; max-width: 800px; padding: 10px;
+        }
+
+        .song-btn {
+            background-color: #DA291C;
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 15px;
+            padding: 12px 15px;
+            font-family: 'Barlow', Tahoma, sans-serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: white;
+            cursor: pointer;
+            border: 3px solid #fff;
+            text-transform: uppercase;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+            flex: 1 1 calc(50% - 20px);
+            min-width: 220px;
+            max-width: 350px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .song-btn:active { transform: translateY(4px) scale(0.95); }
+        .song-btn.theme { background-color: #0033A0; }
+        .song-btn.mood { background-color: #FFC72C; color: #111; text-shadow: none; }
+        .song-btn.boogie { background-color: #E8499B; }
+        .song-btn.down { background-color: #00A368; }
+        .song-btn.party { background-color: #FF671F; }
+        .song-btn.ears { background-color: #A020F0; }
+        .song-btn.bark { background-color: #00CED1; color: #111; text-shadow: none; }
+        .song-btn.mighty { background-color: #FF1493; }
+        .song-btn.everest { background-color: #00958d; }
+        .song-btn.bottle { background-color: #32CD32; }
+        
+        #btn-close-songpicker {
+            margin-top: 15px;
+            padding: 10px 40px; font-size: 1.5rem; font-weight: 900; border-radius: 30px; cursor: pointer;
+            background: #444; color: white; border: 4px solid #fff; font-family: 'Barlow', sans-serif; text-transform: uppercase;
+        }
+
         /* Video Container */
         video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
@@ -270,6 +325,23 @@
         <img id="gif-box-img" src="" alt="Random Paw Patrol Gif">
     </div>
 
+    <div id="song-picker-overlay">
+        <h2 style="font-size: 2.2rem; margin-bottom: 10px; text-shadow: 2px 2px 8px rgba(0,0,0,1);">CHOOSE A SONG!</h2>
+        <div class="song-list-container">
+            <div class="song-btn theme" data-video="videos/theme_song.mp4">Paw Patrol Theme</div>
+            <div class="song-btn mood" data-video="videos/Good Mood.mp4">Good Mood</div>
+            <div class="song-btn boogie" data-video="videos/Pup Pup Boogie.mp4">Pup Pup Boogie</div>
+            <div class="song-btn down" data-video="videos/Down Like That.mp4">Down Like That</div>
+            <div class="song-btn party" data-video="videos/Skyes Dance Party.mp4">Skye's Dance Party</div>
+            <div class="song-btn ears" data-video="videos/Ears Paws Tiny Tails.mp4">Ears, Paws, Tiny Tails</div>
+            <div class="song-btn bark" data-video="videos/Bark to the Beat.mp4">Bark to the Beat</div>
+            <div class="song-btn mighty" data-video="videos/The Mighty Powerful Super Pups.mp4">Mighty Super Pups</div>
+            <div class="song-btn everest" data-video="videos/Everest is the Best.mp4">Everest is the Best</div>
+            <div class="song-btn bottle" data-video="videos/Bottle Up.mp4">Bottle Up</div>
+        </div>
+        <button id="btn-close-songpicker">Cancel</button>
+    </div>
+
     <div id="screen-video" class="screen" style="background-color: black; z-index: 2000; display: none;">
         <video id="master-video" playsinline></video>
         <div style="position: absolute; bottom: 40px; display: flex; gap: 20px; z-index: 2001;">
@@ -289,7 +361,7 @@
                 this.pollInterval = null;
                 
                 this.badImages = ['Mayor Humdinger 1.png', 'Mayor Humdinger 2.png', 'Mayor Humdinger 3.png', 'Mayor Humdinger 4.png'];
-                this.goodImages = ['Mayor Goodway 1.png', 'Mayor Goodway 2.png', 'Mayor Goodway 3.png', 'Captain Turbot 1.png', 'Captain Turbot 2.png', 'Captain Turbot 3.png', 'Mr Porter 1.png', 'Mr Porter 2.png', 'Mr Porter 3.png'];
+                this.goodImages = ['Mayor Goodway 1.png', 'Mayor Goodway 2.png', 'Mayor Goodway 3.png', 'Captain Turbot 1.png', 'Captain Turbot 2.png', 'Captain Turbot 3.png', 'Mr Porter 1.png', 'Mr Porter 2.png', 'Mr Porter 3.png', 'Katie 1.png', 'Katie 2.png', 'Farmer Yumi 1.png'];
 
                 this.scenarios = {
                     'Mayor Humdinger': [
@@ -359,6 +431,40 @@
                         "Mr. Porter's fruit stand was blown over by a giant gust of wind!",
                         "Mr. Porter needs help delivering a hundred pizzas before they get cold!",
                         "Mr. Porter's new spaghetti recipe is so sticky, people's shoes are stuck to the floor!"
+                    ],
+                    'Katie': [
+                        "Katie needs help giving a bath to a very muddy baby elephant!",
+                        "Katie accidentally spilled a giant bottle of bubble bath in the pet parlor!",
+                        "Katie's pet parlor is overrun by playful, bouncing bunnies!",
+                        "Katie needs the pups to rescue a frightened kitten from the top of the windmill!",
+                        "Katie's special dog treats were snatched by a flock of hungry seagulls!",
+                        "Katie accidentally mixed up the dog shampoo with bubblegum flavor, and now all the pets are blowing bubbles!",
+                        "Katie's pet parlor is filled with frogs that escaped from a local pond!",
+                        "Katie needs help! A very stubborn goat refuses to leave the bathtub!",
+                        "Katie's new automatic dog washer has gone haywire and is spraying water everywhere!",
+                        "Katie lost her special grooming brush in a huge pile of freshly cut sheep's wool!",
+                        "Katie needs the pups to catch a playful parrot that keeps stealing all the dog collars!",
+                        "Katie's pet scale is broken and keeps reporting that every puppy weighs a thousand pounds!",
+                        "Katie accidentally locked herself out of the pet parlor and the keys are inside with a mischievous monkey!",
+                        "Katie needs help rounding up a family of ducks that decided to swim in the doggy pool!",
+                        "Katie spilled an entire bag of kibble, and now a very hungry bear is trying to get inside!"
+                    ],
+                    'Farmer Yumi': [
+                        "Farmer Yumi's giant pumpkin is rolling away down the hill!",
+                        "Farmer Yumi's cows are having a dance party in the barn!",
+                        "Farmer Yumi needs help finding a lost little piglet!",
+                        "Farmer Yumi's tractor is stuck in a giant mud puddle!",
+                        "Farmer Yumi's barn roof blew off in a big windstorm!",
+                        "Farmer Yumi's sheep have all wandered off and are playing hide-and-seek in the corn maze!",
+                        "Farmer Yumi accidentally grew a tomato so big it's blocking the barn doors!",
+                        "Farmer Yumi needs help fixing the windmill before all her flour blows away!",
+                        "Farmer Yumi's favorite rooster is stuck at the very top of the silo!",
+                        "Farmer Yumi's watering hose sprung a leak and is turning the farm into a giant slip-and-slide!",
+                        "Farmer Yumi needs the pups to help pick all the apples before a big storm arrives!",
+                        "Farmer Yumi's scarecrow was stolen by a very fashionable family of crows!",
+                        "Farmer Yumi accidentally left the gate open and now there are chickens in the farmhouse!",
+                        "Farmer Yumi's new automatic milking machine won't stop and is spraying milk everywhere!",
+                        "Farmer Yumi needs help rescuing a tiny lamb that got stuck under a giant pile of hay!"
                     ]
                 };
 
@@ -391,7 +497,10 @@
                     btnCallPups: document.getElementById('btn-call-pups'),
                     gifBoxOverlay: document.getElementById('gif-box-overlay'),
                     gifBoxImg: document.getElementById('gif-box-img'),
-                    btnCloseGifBox: document.getElementById('btn-close-gifbox')
+                    btnCloseGifBox: document.getElementById('btn-close-gifbox'),
+                    songPickerOverlay: document.getElementById('song-picker-overlay'),
+                    btnCloseSongPicker: document.getElementById('btn-close-songpicker'),
+                    songButtons: document.querySelectorAll('.song-btn')
                 };
 
                 this.overlayTimeout = null;
@@ -448,7 +557,7 @@
                 const cancelLogoPress = () => {
                     if (logoPressTimer) {
                         clearTimeout(logoPressTimer);
-                        this.playThemeSong(); // It was a short tap
+                        this.openSongPicker(); // It was a short tap
                     }
                 };
 
@@ -461,6 +570,16 @@
                 this.ui.videoPlayer.addEventListener('ended', () => this.stopVideo());
                 this.ui.btnPause.addEventListener('click', () => { this.playSynthesizedClick(); this.togglePauseVideo(); });
                 this.ui.btnStop.addEventListener('click', () => { this.playSynthesizedClick(); this.stopVideo(); });
+                
+                // Song Picker Events
+                this.ui.btnCloseSongPicker.addEventListener('click', () => this.closeSongPicker());
+                this.ui.songButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.playSynthesizedClick();
+                        this.closeSongPicker();
+                        this.playVideo(btn.getAttribute('data-video'));
+                    });
+                });
             }
 
             renderPupGrid() {
@@ -615,6 +734,8 @@
                 else if (charImage.includes('Mayor Goodway')) characterName = 'Mayor Goodway';
                 else if (charImage.includes('Captain Turbot')) characterName = 'Captain Turbot';
                 else if (charImage.includes('Mr Porter')) characterName = 'Mr Porter';
+                else if (charImage.includes('Katie')) characterName = 'Katie';
+                else if (charImage.includes('Farmer Yumi')) characterName = 'Farmer Yumi';
 
                 const possibleScenarios = this.scenarios[characterName] || ["Emergency in Adventure Bay!"];
                 const selectedScenario = possibleScenarios[Math.floor(Math.random() * possibleScenarios.length)];
@@ -779,9 +900,24 @@
             }
 
             playThemeSong() {
+                this.playVideo('videos/theme_song.mp4');
+            }
+            
+            openSongPicker() {
+                if (this.appState !== 'idle') return;
+                this.playSynthesizedClick();
+                this.ui.songPickerOverlay.classList.add('active');
+            }
+            
+            closeSongPicker() {
+                this.playSynthesizedClick();
+                this.ui.songPickerOverlay.classList.remove('active');
+            }
+            
+            playVideo(videoSrc) {
                 this.audioPlayer.pause();
                 this.ui.videoScreen.style.display = 'flex';
-                this.ui.videoPlayer.src = 'videos/theme_song.mp4';
+                this.ui.videoPlayer.src = videoSrc;
                 this.ui.videoPlayer.load();
                 this.ui.videoPlayer.play().catch(e => console.log("Video playback error", e));
                 this.ui.btnPause.innerText = 'Pause';
